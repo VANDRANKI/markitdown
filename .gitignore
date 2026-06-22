@@ -121,11 +121,13 @@ __pypackages__/
 celerybeat-schedule
 celerybeat.pid
 
-# SageMath parsed files
+# SageMaker parsed files
 *.sage.py
 
 # Environments
 .env
+.env.local
+.env.test
 .venv
 env/
 venv/
@@ -153,6 +155,9 @@ dmypy.json
 
 # pytype static type analyzer
 .pytype/
+
+# Ruff cache
+.ruff_cache/
 
 # Cython debug symbols
 cython_debug/
