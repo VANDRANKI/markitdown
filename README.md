@@ -208,6 +208,74 @@ result = md.convert("example.jpg")
 print(result.text_content)
 ```
 
+### Advanced Usage
+
+#### Error Handling
+
+MarkItDown raises specific exceptions that you should handle in production code:
+
+- `FileConversionException` — one or more converters attempted the conversion but all failed. Inspect `.attempts` for individual error details.
+- `UnsupportedFormatException` — the file format is not supported by any registered converter.
+- `FileNotFoundError` / `PermissionError` — standard Python I/O errors for local files.
+- `requests.HTTPError` — raised when fetching a URL returns a non-2xx HTTP status code.
+
+```python
+from markitdown import MarkItDown, FileConversionException, UnsupportedFormatException
+import requests
+
+md = MarkItDown()
+
+# Handling a local file conversion
+try:
+    result = md.convert("report.pdf")
+    print(result.text_content)
+except FileNotFoundError:
+    print("File not found. Check that the path is correct.")
+except PermissionError:
+    print("Permission denied reading the file.")
+except UnsupportedFormatException as exc:
+    print(f"File format not supported: {exc}")
+except FileConversionException as exc:
+    print(f"Conversion failed after {len(exc.attempts)} attempt(s).")
+    # Inspect individual converter errors for debugging
+    for attempt in exc.attempts:
+        print(f"  Converter {type(attempt.converter).__name__} raised: {attempt.exc_info[1]}")
+
+# Handling a URL conversion
+try:
+    result = md.convert("https://example.com/document.docx")
+    print(result.text_content)
+except requests.HTTPError as exc:
+    print(f"HTTP error fetching URL: {exc.response.status_code}")
+except UnsupportedFormatException as exc:
+    print(f"File format not supported: {exc}")
+except FileConversionException as exc:
+    print(f"Conversion failed: {exc}")
+```
+
+#### Converting Binary Streams
+
+You can pass any binary-mode file object or `io.BytesIO` directly, which is useful when you already have the file contents in memory:
+
+```python
+import io
+from markitdown import MarkItDown, UnsupportedFormatException
+from markitdown import StreamInfo
+
+md = MarkItDown()
+
+# Convert from an in-memory buffer, providing a hint about the file type
+pdf_bytes = b"..."  # bytes obtained from a database, S3, etc.
+try:
+    result = md.convert(
+        io.BytesIO(pdf_bytes),
+        stream_info=StreamInfo(extension=".pdf", mimetype="application/pdf"),
+    )
+    print(result.text_content)
+except UnsupportedFormatException:
+    print("Could not determine file type from stream content.")
+```
+
 ### Docker
 
 ```sh
