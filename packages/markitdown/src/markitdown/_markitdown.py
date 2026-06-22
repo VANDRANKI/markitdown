@@ -256,11 +256,42 @@ class MarkItDown:
         stream_info: Optional[StreamInfo] = None,
         **kwargs: Any,
     ) -> DocumentConverterResult:  # TODO: deal with kwargs
-        """
+        """Convert a document from a variety of source types to Markdown.
+
+        This is the primary entry point for document conversion. It dispatches
+        to the appropriate lower-level method (`convert_local`, `convert_uri`,
+        `convert_response`, or `convert_stream`) based on the type of `source`.
+
         Args:
-            - source: can be a path (str or Path), url, or a requests.response object
-            - stream_info: optional stream info to use for the conversion. If None, infer from source
-            - kwargs: additional arguments to pass to the converter
+            source: The document to convert. Accepted types:
+                - ``str``: A local file path or a URI (``http:``, ``https:``,
+                  ``file:``, or ``data:`` scheme).
+                - ``pathlib.Path``: A local file path.
+                - ``requests.Response``: An already-fetched HTTP response.
+                - ``BinaryIO``: Any readable binary stream (e.g. ``open(path, 'rb')``
+                  or ``io.BytesIO``). Text streams (``io.TextIOBase``) are *not*
+                  accepted.
+            stream_info: Optional metadata about the source (MIME type, file
+                extension, charset, URL, etc.) used to guide converter selection.
+                When ``None``, the library infers this information automatically.
+            **kwargs: Additional keyword arguments forwarded to the selected
+                converter. Common options include ``llm_client``, ``llm_model``,
+                ``llm_prompt``, ``exiftool_path``, and ``style_map``.
+
+        Returns:
+            A `DocumentConverterResult` whose `text_content` attribute holds
+            the Markdown representation of the document.
+
+        Raises:
+            TypeError: If `source` is not one of the accepted types.
+            FileConversionException: If one or more converters attempted the
+                conversion but all raised exceptions.
+            UnsupportedFormatException: If no registered converter could handle
+                the detected file format.
+            requests.HTTPError: If `source` is an HTTP/HTTPS URI and the server
+                returns a non-2xx status code.
+            FileNotFoundError: If `source` is a local path that does not exist.
+            ValueError: If `source` is a URI with an unsupported scheme.
         """
 
         # Local path or url
@@ -308,6 +339,38 @@ class MarkItDown:
         url: Optional[str] = None,  # Deprecated -- use stream_info
         **kwargs: Any,
     ) -> DocumentConverterResult:
+        """Convert a local file to Markdown.
+
+        Opens the file at `path` in binary mode and passes it through the
+        registered converter pipeline. File type detection uses the path's
+        extension plus content-based analysis (via magika).
+
+        Args:
+            path: Filesystem path to the file to convert. Accepts both
+                ``str`` and ``pathlib.Path``.
+            stream_info: Optional metadata (MIME type, charset, URL, etc.) that
+                overrides or supplements the information inferred from the file
+                path. When ``None``, metadata is inferred automatically.
+            file_extension: *Deprecated.* Pass ``StreamInfo(extension=...)``
+                via `stream_info` instead. Explicitly specifies the file
+                extension (e.g. ``".pdf"``) used for format detection.
+            url: *Deprecated.* Pass ``StreamInfo(url=...)`` via `stream_info`
+                instead. Associates a URL with the local file so that
+                URL-aware converters (e.g. Wikipedia, YouTube) can be selected.
+            **kwargs: Additional keyword arguments forwarded to the converter.
+
+        Returns:
+            A `DocumentConverterResult` whose `text_content` attribute holds
+            the Markdown representation of the file.
+
+        Raises:
+            FileNotFoundError: If `path` does not exist on the filesystem.
+            PermissionError: If the process lacks read permission for `path`.
+            FileConversionException: If one or more converters attempted the
+                conversion but all raised exceptions.
+            UnsupportedFormatException: If no registered converter could handle
+                the detected file format.
+        """
         if isinstance(path, Path):
             path = str(path)
 
@@ -392,7 +455,34 @@ class MarkItDown:
         mock_url: Optional[str] = None,
         **kwargs: Any,
     ) -> DocumentConverterResult:
-        """Alias for convert_uri()"""
+        """Convert a document at the given URL to Markdown.
+
+        This is an alias for `convert_uri` and will likely be deprecated in a
+        future release in favour of that method.
+
+        Args:
+            url: The HTTP or HTTPS URL of the document to fetch and convert.
+            stream_info: Optional metadata that overrides information inferred
+                from the HTTP response headers.
+            file_extension: *Deprecated.* Pass ``StreamInfo(extension=...)``
+                via `stream_info` instead.
+            mock_url: Override the URL stored in `StreamInfo` after the request
+                is made. Useful for testing or when the effective URL differs
+                from the canonical one.
+            **kwargs: Additional keyword arguments forwarded to the converter.
+
+        Returns:
+            A `DocumentConverterResult` whose `text_content` attribute holds
+            the Markdown representation of the remote document.
+
+        Raises:
+            requests.HTTPError: If the server returns a non-2xx status code.
+            FileConversionException: If one or more converters attempted the
+                conversion but all raised exceptions.
+            UnsupportedFormatException: If no registered converter could handle
+                the detected file format.
+            ValueError: If `url` uses an unsupported URI scheme.
+        """
         # convert_url will likely be deprecated in the future in favor of convert_uri
         return self.convert_uri(
             url,
