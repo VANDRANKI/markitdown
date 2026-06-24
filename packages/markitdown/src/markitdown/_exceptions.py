@@ -1,3 +1,17 @@
+"""Exception classes for the MarkItDown document conversion library.
+
+Hierarchy::
+
+    MarkItDownException
+    ├── MissingDependencyException
+    ├── UnsupportedFormatException
+    └── FileConversionException
+
+`FailedConversionAttempt` is a companion dataclass (not an exception) that
+captures the outcome of a single converter attempt within a
+`FileConversionException`.
+"""
+
 from typing import Optional, List, Any
 
 MISSING_DEPENDENCY_MESSAGE = """{converter} recognized the input as a potential {extension} file, but the dependencies needed to read {extension} files have not been installed. To resolve this error, include the optional dependency [{feature}] or [all] when installing MarkItDown. For example:
@@ -40,8 +54,16 @@ class UnsupportedFormatException(MarkItDownException):
 
 
 class FailedConversionAttempt(object):
-    """
-    Represents an a single attempt to convert a file.
+    """Records a single failed attempt to convert a file.
+
+    Collected by `FileConversionException` to give callers a full audit trail
+    of which converters were tried and what error each one produced.
+
+    Args:
+        converter: The converter instance that was attempted. Used to display
+            the converter class name in error messages.
+        exc_info: The 3-tuple returned by `sys.exc_info()` at the point of
+            failure, or ``None`` if no exception info is available.
     """
 
     def __init__(self, converter: Any, exc_info: Optional[tuple] = None):
