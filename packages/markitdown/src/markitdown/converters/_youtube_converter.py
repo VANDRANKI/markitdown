@@ -2,7 +2,7 @@ import json
 import time
 import re
 import bs4
-from typing import Any, BinaryIO, Dict, List, Union
+from typing import Any, BinaryIO, Callable, Dict, List, TypeVar, Union
 from urllib.parse import parse_qs, urlparse, unquote
 
 from .._base_converter import DocumentConverter, DocumentConverterResult
@@ -22,6 +22,8 @@ try:
 except ModuleNotFoundError:
     IS_YOUTUBE_TRANSCRIPT_CAPABLE = False
 
+
+_T = TypeVar("_T")
 
 ACCEPTED_MIME_TYPE_PREFIXES = [
     "text/html",
@@ -223,7 +225,9 @@ class YouTubeConverter(DocumentConverter):
                     return result
         return None
 
-    def _retry_operation(self, operation, retries=3, delay=2):
+    def _retry_operation(
+        self, operation: Callable[[], _T], retries: int = 3, delay: float = 2
+    ) -> _T:
         """Retries the operation if it fails."""
         attempt = 0
         while attempt < retries:
