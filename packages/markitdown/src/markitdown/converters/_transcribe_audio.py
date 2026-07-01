@@ -21,6 +21,24 @@ except ImportError:
 
 
 def transcribe_audio(file_stream: BinaryIO, *, audio_format: str = "wav") -> str:
+    """
+    Transcribes speech from an audio stream to text using the `speech_recognition`
+    library (Google's Web Speech API).
+
+    Args:
+        file_stream (BinaryIO): A binary stream containing the audio data.
+        audio_format (str, optional): The format of the audio data. Supported
+            values are "wav", "aiff", "flac" (used as-is) and "mp3", "mp4"
+            (converted to WAV via `pydub` before transcription). Defaults to "wav".
+
+    Returns:
+        str: The transcribed text, or "[No speech detected]" if no speech was recognized.
+
+    Raises:
+        MissingDependencyException: If the optional audio-transcription dependencies
+            are not installed.
+        ValueError: If `audio_format` is not a supported format.
+    """
     # Check for installed dependencies
     if _dependency_exc_info is not None:
         raise MissingDependencyException(
