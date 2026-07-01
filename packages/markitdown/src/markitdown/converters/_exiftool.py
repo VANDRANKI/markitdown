@@ -5,6 +5,10 @@ from typing import Any, BinaryIO, Union
 
 
 def _parse_version(version: str) -> tuple:
+    """
+    Parses a dotted version string (e.g. "12.24") into a tuple of ints (e.g. (12, 24))
+    so it can be compared against other version tuples.
+    """
     return tuple(map(int, (version.split("."))))
 
 
