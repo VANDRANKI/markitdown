@@ -5,6 +5,7 @@ from typing import Any, BinaryIO, Union
 
 
 def _parse_version(version: str) -> tuple:
+    """Parse a dotted version string (e.g. "12.24") into a tuple of ints for comparison."""
     return tuple(map(int, (version.split("."))))
 
 
@@ -13,6 +14,22 @@ def exiftool_metadata(
     *,
     exiftool_path: Union[str, None],
 ) -> Any:  # Need a better type for json data
+    """Extract metadata from ``file_stream`` by shelling out to the ``exiftool`` binary.
+
+    Args:
+        file_stream: A binary stream positioned anywhere; its position is restored
+            before this function returns.
+        exiftool_path: Path to the ``exiftool`` executable. If falsy, no metadata
+            extraction is attempted and an empty dict is returned.
+
+    Returns:
+        A dict of metadata fields as parsed from exiftool's JSON output, or an
+        empty dict if ``exiftool_path`` was not provided.
+
+    Raises:
+        RuntimeError: If the exiftool version cannot be determined, or if the
+            installed version is older than 12.24 (vulnerable to CVE-2021-22204).
+    """
     # Nothing to do
     if not exiftool_path:
         return {}
