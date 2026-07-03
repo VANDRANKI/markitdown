@@ -61,6 +61,12 @@ class RssConverter(DocumentConverter):
         return False
 
     def _check_xml(self, file_stream: BinaryIO) -> bool:
+        """Determine whether the stream contains a recognizable RSS or Atom feed.
+
+        Parses the stream as XML and checks for a recognized feed type via
+        `_feed_type`. The stream position is always restored before returning,
+        so this method is safe to call from `accepts()`.
+        """
         cur_pos = file_stream.tell()
         try:
             doc = minidom.parse(file_stream)
@@ -72,6 +78,8 @@ class RssConverter(DocumentConverter):
         return False
 
     def _feed_type(self, doc: Any) -> str | None:
+        """Return "rss" or "atom" based on the root elements present in `doc`,
+        or None if neither feed type is recognized."""
         if doc.getElementsByTagName("rss"):
             return "rss"
         elif doc.getElementsByTagName("feed"):
