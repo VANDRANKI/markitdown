@@ -93,6 +93,27 @@ class ImageConverter(DocumentConverter):
         model,
         prompt=None,
     ) -> Union[None, str]:
+        """Generate an image caption/description using a multimodal LLM.
+
+        Reads the image from `file_stream`, base64-encodes it, and sends it
+        to the given OpenAI-compatible `client`/`model` as a data URI, along
+        with `prompt` (or a default prompt if none is given).
+
+        Args:
+            file_stream: The image file stream. Its position is restored
+                after reading.
+            stream_info: Metadata about the stream, used to infer the
+                content type when `stream_info.mimetype` is not set.
+            client: An OpenAI-compatible client exposing
+                `chat.completions.create`.
+            model: The model name to pass to the client.
+            prompt: Optional custom prompt. Defaults to a generic
+                "Write a detailed caption for this image." prompt.
+
+        Returns:
+            The generated description, or `None` if the image could not be
+            read/encoded.
+        """
         if prompt is None or prompt.strip() == "":
             prompt = "Write a detailed caption for this image."
 
@@ -109,7 +130,7 @@ class ImageConverter(DocumentConverter):
         cur_pos = file_stream.tell()
         try:
             base64_image = base64.b64encode(file_stream.read()).decode("utf-8")
-        except Exception as e:
+        except Exception:
             return None
         finally:
             file_stream.seek(cur_pos)
