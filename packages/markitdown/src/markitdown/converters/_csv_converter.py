@@ -41,6 +41,25 @@ class CsvConverter(DocumentConverter):
         stream_info: StreamInfo,
         **kwargs: Any,  # Options to pass to the converter
     ) -> DocumentConverterResult:
+        """Convert a CSV stream into a Markdown table.
+
+        The file is decoded using ``stream_info.charset`` if provided, otherwise the
+        charset is auto-detected via ``charset_normalizer``. Rows are parsed with the
+        standard ``csv`` module (default dialect: comma-delimited, double-quoted).
+        The first row is treated as the header. Data rows with fewer columns than the
+        header are padded with empty strings; rows with more columns are truncated to
+        match the header width. Cell values are not escaped, so values containing a
+        literal ``|`` character will break the resulting Markdown table's column
+        alignment.
+
+        Args:
+            file_stream: Binary stream containing the CSV data.
+            stream_info: Metadata about the stream, used here for `charset` detection.
+
+        Returns:
+            A `DocumentConverterResult` with the CSV rendered as a Markdown table
+            (or an empty markdown string if the CSV has no rows).
+        """
         # Read the file content
         if stream_info.charset:
             content = file_stream.read().decode(stream_info.charset)
