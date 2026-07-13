@@ -631,7 +631,7 @@ class MarkItDown:
         )
 
     def register_page_converter(self, converter: DocumentConverter) -> None:
-        """DEPRECATED: User register_converter instead."""
+        """DEPRECATED: Use register_converter instead."""
         warn(
             "register_page_converter is deprecated. Use register_converter instead.",
             DeprecationWarning,
