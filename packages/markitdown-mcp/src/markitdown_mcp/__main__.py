@@ -79,7 +79,7 @@ def create_starlette_app(mcp_server: Server, *, debug: bool = False) -> Starlett
 
 
 # Main entry point
-def main():
+def main() -> None:
     import argparse
 
     mcp_server = mcp._mcp_server
