@@ -255,10 +255,14 @@ class PptxConverter(DocumentConverter):
             header = markdown_table[0]
             separator = "|" + "|".join(["---"] * len(data[0])) + "|"
             return md + "\n".join([header, separator] + markdown_table[1:])
-        except ValueError as e:
-            # Handle the specific error for unsupported chart types
-            if "unsupported plot type" in str(e):
-                return "\n\n[unsupported chart]\n\n"
+        except ValueError:
+            # python-pptx raises ValueError("unsupported plot type ...") for
+            # chart types it can't introspect (e.g. some XY/bubble charts).
+            # Other ValueErrors are treated the same way: always return the
+            # placeholder rather than falling through and implicitly
+            # returning None, which would raise a TypeError when the caller
+            # concatenates the result onto md_content.
+            return "\n\n[unsupported chart]\n\n"
         except Exception:
             # Catch any other exceptions that might occur
             return "\n\n[unsupported chart]\n\n"
