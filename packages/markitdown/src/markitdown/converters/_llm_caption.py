@@ -1,11 +1,16 @@
-from typing import BinaryIO, Union
+from typing import Any, BinaryIO, Optional, Union
 import base64
 import mimetypes
 from .._stream_info import StreamInfo
 
 
 def llm_caption(
-    file_stream: BinaryIO, stream_info: StreamInfo, *, client, model, prompt=None
+    file_stream: BinaryIO,
+    stream_info: StreamInfo,
+    *,
+    client: Any,
+    model: str,
+    prompt: Optional[str] = None,
 ) -> Union[None, str]:
     if prompt is None or prompt.strip() == "":
         prompt = "Write a detailed caption for this image."
@@ -21,7 +26,9 @@ def llm_caption(
     cur_pos = file_stream.tell()
     try:
         base64_image = base64.b64encode(file_stream.read()).decode("utf-8")
-    except Exception as e:
+    except Exception:
+        # Reading or encoding the stream failed (e.g. unseekable or empty stream);
+        # skip captioning rather than propagating an opaque error.
         return None
     finally:
         file_stream.seek(cur_pos)
