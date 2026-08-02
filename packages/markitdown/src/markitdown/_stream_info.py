@@ -1,5 +1,5 @@
 from dataclasses import dataclass, asdict
-from typing import Optional
+from typing import Any, Optional
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -17,7 +17,7 @@ class StreamInfo:
     local_path: Optional[str] = None  # If read from disk
     url: Optional[str] = None  # If read from url
 
-    def copy_and_update(self, *args, **kwargs):
+    def copy_and_update(self, *args: "StreamInfo", **kwargs: Any) -> "StreamInfo":
         """Copy the StreamInfo object and update it with the given StreamInfo
         instance and/or other keyword arguments."""
         new_info = asdict(self)
