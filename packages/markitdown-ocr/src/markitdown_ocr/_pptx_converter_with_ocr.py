@@ -7,8 +7,6 @@ import io
 import sys
 from typing import Any, BinaryIO, Optional
 
-from typing import BinaryIO, Any, Optional
-
 from markitdown.converters import HtmlConverter
 from markitdown import DocumentConverter, DocumentConverterResult, StreamInfo
 from markitdown._exceptions import (
@@ -242,8 +240,13 @@ class PptxConverterWithOCR(DocumentConverter):
             header = markdown_table[0]
             separator = "|" + "|".join(["---"] * len(data[0])) + "|"
             return md + "\\n".join([header, separator] + markdown_table[1:])
-        except ValueError as e:
-            if "unsupported plot type" in str(e):
-                return "\\n\\n[unsupported chart]\\n\\n"
+        except ValueError:
+            # python-pptx raises ValueError("unsupported plot type ...") for
+            # chart types it can't introspect (e.g. some XY/bubble charts).
+            # Other ValueErrors are handled the same way: always return the
+            # placeholder rather than falling through to an implicit None
+            # return, which would raise a TypeError when the caller does
+            # `md_content += self._convert_chart_to_markdown(...)`.
+            return "\\n\\n[unsupported chart]\\n\\n"
         except Exception:
             return "\\n\\n[unsupported chart]\\n\\n"
