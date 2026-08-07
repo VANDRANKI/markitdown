@@ -12,6 +12,17 @@ ACCEPTED_MIME_TYPE_PREFIXES = [
 ACCEPTED_FILE_EXTENSIONS = [".csv"]
 
 
+def _escape_markdown_table_cell(cell: str) -> str:
+    """
+    Escape/normalize a single CSV cell so it can't corrupt the Markdown
+    table structure it's placed into. Without this, a literal "|" in the
+    source data would be misread as a column separator, and an embedded
+    newline (e.g. from a quoted multi-line CSV field) would be misread as
+    the start of a new table row.
+    """
+    return cell.replace("|", "\\|").replace("\r\n", " ").replace("\n", " ")
+
+
 class CsvConverter(DocumentConverter):
     """
     Converts CSV files to Markdown tables.
@@ -58,18 +69,20 @@ class CsvConverter(DocumentConverter):
         markdown_table = []
 
         # Add header row
-        markdown_table.append("| " + " | ".join(rows[0]) + " |")
+        header = [_escape_markdown_table_cell(cell) for cell in rows[0]]
+        markdown_table.append("| " + " | ".join(header) + " |")
 
         # Add separator row
-        markdown_table.append("| " + " | ".join(["---"] * len(rows[0])) + " |")
+        markdown_table.append("| " + " | ".join(["---"] * len(header)) + " |")
 
         # Add data rows
         for row in rows[1:]:
             # Make sure row has the same number of columns as header
-            while len(row) < len(rows[0]):
+            while len(row) < len(header):
                 row.append("")
             # Truncate if row has more columns than header
-            row = row[: len(rows[0])]
+            row = row[: len(header)]
+            row = [_escape_markdown_table_cell(cell) for cell in row]
             markdown_table.append("| " + " | ".join(row) + " |")
 
         result = "\n".join(markdown_table)
