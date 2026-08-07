@@ -71,7 +71,12 @@ class IpynbConverter(DocumentConverter):
                     if title is None:
                         for line in source_lines:
                             if line.startswith("# "):
-                                title = line.lstrip("# ").strip()
+                                # Use a slice (not lstrip) so a title that
+                                # itself starts with "#" or extra spaces
+                                # (e.g. "# #1 Trending") isn't mangled --
+                                # lstrip("# ") strips *any* leading '#'/' '
+                                # characters, not just the heading marker.
+                                title = line[2:].strip()
                                 break
 
                 elif cell_type == "code":
