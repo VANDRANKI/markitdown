@@ -91,7 +91,7 @@ class HtmlConverter(DocumentConverter):
         )
 
     def convert_string(
-        self, html_content: str, *, url: Optional[str] = None, **kwargs
+        self, html_content: str, *, url: Optional[str] = None, **kwargs: Any
     ) -> DocumentConverterResult:
         """
         Non-standard convenience method to convert a string to markdown.
