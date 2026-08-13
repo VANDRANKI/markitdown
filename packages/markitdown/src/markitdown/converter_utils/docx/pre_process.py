@@ -71,7 +71,7 @@ def _get_omath_tag_replacement(tag: Tag, block: bool = False) -> Tag:
     return r_tag
 
 
-def _replace_equations(tag: Tag):
+def _replace_equations(tag: Tag) -> None:
     """
     Replaces OMML (Office Math Markup Language) elements with their LaTeX equivalents.
 
