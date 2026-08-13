@@ -10,7 +10,7 @@ from .__about__ import __version__
 from ._markitdown import MarkItDown, StreamInfo, DocumentConverterResult
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Convert various file formats to markdown.",
         prog="markitdown",
@@ -200,7 +200,7 @@ def main():
     _handle_output(args, result)
 
 
-def _handle_output(args, result: DocumentConverterResult):
+def _handle_output(args: argparse.Namespace, result: DocumentConverterResult) -> None:
     """Handle output to stdout or file"""
     if args.output:
         with open(args.output, "w", encoding="utf-8") as f:
@@ -214,7 +214,7 @@ def _handle_output(args, result: DocumentConverterResult):
         )
 
 
-def _exit_with_error(message: str):
+def _exit_with_error(message: str) -> None:
     print(message)
     sys.exit(1)
 
