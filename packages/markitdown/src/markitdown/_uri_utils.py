@@ -17,6 +17,20 @@ def file_uri_to_path(file_uri: str) -> Tuple[str | None, str]:
 
 
 def parse_data_uri(uri: str) -> Tuple[str | None, Dict[str, str], bytes]:
+    """Parse a data URI into its mime type, attributes, and decoded content.
+
+    Parameters:
+    - uri: The data URI to parse (e.g., "data:text/plain;charset=utf-8;base64,...").
+
+    Returns:
+    - A tuple of (mime_type, attributes, content), where mime_type is None if not
+      specified, attributes is a dict of any additional key=value (or bare) parts
+      in the header, and content is the decoded (base64 or percent-decoded) bytes.
+
+    Raises:
+    - ValueError: If the URI does not start with "data:" or is missing the ','
+      separator between the header and the data.
+    """
     if not uri.startswith("data:"):
         raise ValueError("Not a data URI")
 
