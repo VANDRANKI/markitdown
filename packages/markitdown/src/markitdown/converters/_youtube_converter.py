@@ -2,7 +2,7 @@ import json
 import time
 import re
 import bs4
-from typing import Any, BinaryIO, Dict, List, Union
+from typing import Any, BinaryIO, Callable, Dict, List, Union
 from urllib.parse import parse_qs, urlparse, unquote
 
 from .._base_converter import DocumentConverter, DocumentConverterResult
@@ -223,7 +223,9 @@ class YouTubeConverter(DocumentConverter):
                     return result
         return None
 
-    def _retry_operation(self, operation, retries=3, delay=2):
+    def _retry_operation(
+        self, operation: Callable[[], Any], retries: int = 3, delay: int = 2
+    ) -> Any:
         """Retries the operation if it fails."""
         attempt = 0
         while attempt < retries:
