@@ -42,7 +42,7 @@ class _CustomMarkdownify(markdownify.MarkdownConverter):
         text: str,
         convert_as_inline: Optional[bool] = False,
         **kwargs,
-    ):
+    ) -> str:
         """Same as usual converter, but removes Javascript links and escapes URIs."""
         prefix, suffix, text = markdownify.chomp(text)  # type: ignore
         if not text:
